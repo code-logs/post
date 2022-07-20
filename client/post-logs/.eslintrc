@@ -12,6 +12,8 @@
       {
         "ignorePackages": true
       }
-    ]
+    ],
+    "class-methods-use-this": "off",
+    "no-alert": "off"
   }
 }
