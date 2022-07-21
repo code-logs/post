@@ -38,25 +38,27 @@ export class MenuList extends LitElement {
   render() {
     return html`
       <ul>
-        ${this.menus.map(
-          ({ title, route }) => html`
-            <li>
-              <button
-                ?active=${this.isActiveMenu(route)}
-                @click=${() => {
-                  this.moveToPage(route)
-                }}
-                @keydown=${(event: KeyboardEvent) => {
-                  if (event.key === 'enter' || event.key === 'space') {
+        ${this.menus
+          .filter((menu) => menu.title)
+          .map(
+            ({ title, route }) => html`
+              <li>
+                <button
+                  ?active=${this.isActiveMenu(route)}
+                  @click=${() => {
                     this.moveToPage(route)
-                  }
-                }}
-              >
-                ${title}
-              </button>
-            </li>
-          `
-        )}
+                  }}
+                  @keydown=${(event: KeyboardEvent) => {
+                    if (event.key === 'enter' || event.key === 'space') {
+                      this.moveToPage(route)
+                    }
+                  }}
+                >
+                  ${title}
+                </button>
+              </li>
+            `
+          )}
       </ul>
     `
   }

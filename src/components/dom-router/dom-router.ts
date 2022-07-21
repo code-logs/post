@@ -65,10 +65,7 @@ export class DomRouter extends LitElement {
   }
 
   private initActivePage() {
-    const targetPage = this.pages.find(
-      ({ route }) => route === window.location.pathname
-    )
-    if (!targetPage) throw new Error('No activation target page found')
+    const targetPage = this.findMatchedPage()
     this.activatePage(targetPage)
   }
 
@@ -96,10 +93,24 @@ export class DomRouter extends LitElement {
   }
 
   private onPopStateHandler() {
-    const prevPage = this.pages.find(
-      ({ route }) => route === window.location.pathname
-    )
-    if (!prevPage) throw new Error('Failed to find previous page')
-    this.activatePage(prevPage)
+    const page = this.findMatchedPage()
+    this.activatePage(page)
+  }
+
+  private findMatchedPage() {
+    const page = this.pages.find(({ route }) => {
+      const pageRouteElements = route.split(/\//)
+      const pathElements = window.location.pathname.split(/\//)
+
+      return pageRouteElements.every((routeElement, index) => {
+        if (routeElement.startsWith(':')) return true
+
+        return routeElement === pathElements[index]
+      })
+    })
+
+    if (!page) throw new Error('Failed to find matched page')
+
+    return page
   }
 }

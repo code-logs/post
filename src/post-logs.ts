@@ -17,8 +17,17 @@ export class PostLogs extends LitElement {
       flex-direction: column;
     }
 
+    header {
+      position: sticky;
+      top: 0;
+      background-color: var(--theme-background-color);
+    }
+
     main {
       flex-grow: 1;
+      width: 800px;
+      max-width: 800px;
+      margin: 20px auto 0 auto;
     }
   `
 
