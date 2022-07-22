@@ -21,7 +21,7 @@ export class PostList extends PageElement {
     }
   `
 
-  protected firstUpdated(): void {
+  protected firstUpdated() {
     this.fetchPosts()
   }
 

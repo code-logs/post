@@ -3,6 +3,8 @@ import { customElement, property } from 'lit/decorators.js'
 import { Page } from './types/page.js'
 
 export const navigate = (route: string) => {
+  if (route === window.location.pathname) return
+
   window.history.pushState(null, '', route)
   window.history.pushState(null, '', route)
   window.history.back()
@@ -17,7 +19,7 @@ export class DomRouter extends LitElement {
 
   private readonly PAGE_ACTIVE_FLAG = 'active'
 
-  private activePageRoutes: Set<string> = new Set<string>()
+  private loadedPageRoutes: Set<string> = new Set<string>()
 
   constructor() {
     super()
@@ -66,21 +68,22 @@ export class DomRouter extends LitElement {
 
   private initActivePage() {
     const targetPage = this.findMatchedPage()
-    this.activatePage(targetPage)
+    this.mount(targetPage)
   }
 
-  private async activatePage(targetPage: Page) {
-    if (!this.activePageRoutes.has(targetPage.route)) {
+  private async mount(targetPage: Page) {
+    if (!this.loadedPageRoutes.has(targetPage.route)) {
       await this.importPage(targetPage)
-      this.appendPage(targetPage)
-      this.activePageRoutes.add(targetPage.route)
+      this.loadedPageRoutes.add(targetPage.route)
     }
 
+    this.appendPage(targetPage)
     const targetPageElement = this.getPageElement(targetPage)
-    if (targetPageElement === this.currentPageElement) return
-
-    this.currentPageElement?.removeAttribute(this.PAGE_ACTIVE_FLAG)
     targetPageElement.setAttribute(this.PAGE_ACTIVE_FLAG, '')
+  }
+
+  private unmount() {
+    this.currentPageElement?.remove()
   }
 
   private async importPage(targetPage: Page) {
@@ -94,7 +97,9 @@ export class DomRouter extends LitElement {
 
   private onPopStateHandler() {
     const page = this.findMatchedPage()
-    this.activatePage(page)
+
+    this.unmount()
+    this.mount(page)
   }
 
   private findMatchedPage() {

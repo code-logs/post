@@ -28,6 +28,7 @@ export class PostLogs extends LitElement {
       width: 800px;
       max-width: 800px;
       margin: 20px auto 0 auto;
+      padding-bottom: 10px;
     }
   `
 

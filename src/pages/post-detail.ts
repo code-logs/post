@@ -1,12 +1,17 @@
 import { css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
+import '../components/markdown-editor/markdown-editor.js'
 import { Post } from '../types/post.js'
 import fetcher from '../utils/fetcher.js'
 import { PageElement } from './abstracts/page-element.js'
+import '../components/markdown-preview/markdown-preview.js'
 
 @customElement('post-detail')
 export class PostDetail extends PageElement {
   pageTitle: string = ''
+
+  @property({ type: Boolean })
+  enablePreview?: boolean = false
 
   @property({ type: String })
   postFileName?: string
@@ -15,28 +20,12 @@ export class PostDetail extends PageElement {
   post?: Post
 
   @property({ type: String })
-  content?: string
+  content: string = ''
 
   static styles = css`
-    textarea {
-      font-family: sans-serif;
-      color: var(--theme-font-color);
-      font-size: 14px;
-      resize: vertical;
-      background-color: var(--theme-light-background-color);
-      padding: 10px;
-      border: 1px dashed var(--theme-red-color);
-      width: 100%;
-      min-height: 650px;
-      outline: none;
-    }
-    textarea::-webkit-scrollbar {
-      cursor: default;
-      width: 5px;
-    }
-    textarea::-webkit-scrollbar-thumb {
-      background-color: var(--theme-red-color);
-      border-radius: 10px;
+    #editor {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
     }
   `
 
@@ -44,7 +33,7 @@ export class PostDetail extends PageElement {
     super()
     this.postFileName = window.location.pathname.replace(/^\/posts\//g, '')
     if (!this.postFileName) window.location.href = '/'
-    this.pageTitle = this.postFileName
+    this.pageTitle = `Post Logs - ${this.postFileName}`
   }
 
   protected firstUpdated(): void {
@@ -63,9 +52,31 @@ export class PostDetail extends PageElement {
 
   render() {
     return html`
-      ${!this.post || !this.content
-        ? html`<p>데이터를 불러오는 중 입니다.</p>`
-        : html`<textarea .value=${this.content}></textarea>`}
+      <section>
+        <header>
+          <label>
+            <input
+              type="checkbox"
+              .checked=${Boolean(this.enablePreview)}
+              @change=${() => {
+                this.enablePreview = !this.enablePreview
+              }}
+            />
+            <span>Preview</span>
+          </label>
+        </header>
+
+        ${this.enablePreview
+          ? html`<markdown-preview
+              .markdown=${this.content}
+            ></markdown-preview>`
+          : html`<markdown-editor
+              .value=${this.content}
+              @valueChange=${(event: CustomEvent) => {
+                this.content = event.detail.value
+              }}
+            ></markdown-editor>`}
+      </section>
     `
   }
 }
