@@ -4,10 +4,8 @@ import { Page } from './types/page.js'
 
 export const navigate = (route: string) => {
   if (route === window.location.pathname) return
-
-  window.history.pushState(null, '', route)
-  window.history.pushState(null, '', route)
-  window.history.back()
+  const navigateEvent = new CustomEvent('navigate', { detail: { route } })
+  document.dispatchEvent(navigateEvent)
 }
 
 @customElement('dom-router')
@@ -21,11 +19,24 @@ export class DomRouter extends LitElement {
 
   private loadedPageRoutes: Set<string> = new Set<string>()
 
-  constructor() {
-    super()
-    window.onpopstate = () => {
-      this.onPopStateHandler()
-    }
+  private navigateHandler?: (event: Event) => void
+
+  private popStateHandler?: () => void
+
+  connectedCallback() {
+    super.connectedCallback?.()
+    this.navigateHandler = this.onNavigateHandler.bind(this)
+    this.popStateHandler = this.onPopStateHandler.bind(this)
+    document.addEventListener('navigate', this.navigateHandler)
+    window.addEventListener('popstate', this.popStateHandler)
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback?.()
+    if (this.navigateHandler)
+      document.removeEventListener('navigate', this.navigateHandler)
+    if (this.popStateHandler)
+      window.removeEventListener('popstate', this.popStateHandler)
   }
 
   static styles = css`
@@ -41,18 +52,18 @@ export class DomRouter extends LitElement {
     }
   `
 
-  render() {
-    return html`<slot></slot>`
-  }
-
   protected firstUpdated() {
     if (!this.pages.length) throw new Error('No pages initialized')
   }
 
-  protected updated(props: PropertyValueMap<DomRouter>): void {
+  protected updated(props: PropertyValueMap<DomRouter>) {
     if (props.has('pages') && !this.activePage) {
       this.initActivePage()
     }
+  }
+
+  render() {
+    return html`<slot></slot>`
   }
 
   private getPageElement(targetPage: Page) {
@@ -63,7 +74,7 @@ export class DomRouter extends LitElement {
   }
 
   private get currentPageElement() {
-    return this.querySelector('[active]')
+    return this.querySelector(`[${this.PAGE_ACTIVE_FLAG}]`)
   }
 
   private initActivePage() {
@@ -83,7 +94,9 @@ export class DomRouter extends LitElement {
   }
 
   private unmount() {
-    this.currentPageElement?.remove()
+    const pageElement = this.currentPageElement
+    pageElement?.removeAttribute(this.PAGE_ACTIVE_FLAG)
+    pageElement?.remove()
   }
 
   private async importPage(targetPage: Page) {
@@ -95,7 +108,20 @@ export class DomRouter extends LitElement {
     this.appendChild(pageElement)
   }
 
+  private onNavigateHandler(event: Event) {
+    if (event instanceof CustomEvent) {
+      const { route } = event.detail
+      window.history.pushState(null, '', route)
+
+      this.reloadPage()
+    }
+  }
+
   private onPopStateHandler() {
+    this.reloadPage()
+  }
+
+  private reloadPage() {
     const page = this.findMatchedPage()
 
     this.unmount()

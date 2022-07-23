@@ -1,10 +1,9 @@
-import { css, html } from 'lit'
+import { html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import '../components/markdown-editor/markdown-editor.js'
+import '../components/markdown-view-editor/markdown-view-editor.js'
 import { Post } from '../types/post.js'
 import fetcher from '../utils/fetcher.js'
 import { PageElement } from './abstracts/page-element.js'
-import '../components/markdown-preview/markdown-preview.js'
 
 @customElement('post-detail')
 export class PostDetail extends PageElement {
@@ -21,13 +20,6 @@ export class PostDetail extends PageElement {
 
   @property({ type: String })
   content: string = ''
-
-  static styles = css`
-    #editor {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-  `
 
   constructor() {
     super()
@@ -52,31 +44,10 @@ export class PostDetail extends PageElement {
 
   render() {
     return html`
-      <section>
-        <header>
-          <label>
-            <input
-              type="checkbox"
-              .checked=${Boolean(this.enablePreview)}
-              @change=${() => {
-                this.enablePreview = !this.enablePreview
-              }}
-            />
-            <span>Preview</span>
-          </label>
-        </header>
-
-        ${this.enablePreview
-          ? html`<markdown-preview
-              .markdown=${this.content}
-            ></markdown-preview>`
-          : html`<markdown-editor
-              .value=${this.content}
-              @valueChange=${(event: CustomEvent) => {
-                this.content = event.detail.value
-              }}
-            ></markdown-editor>`}
-      </section>
+      <markdown-view-editor
+        enablePreview
+        .content=${this.content}
+      ></markdown-view-editor>
     `
   }
 }

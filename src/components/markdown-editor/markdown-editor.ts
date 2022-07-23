@@ -40,7 +40,18 @@ export class MarkdownEditor extends LitElement {
   `
 
   private dispatchValueChangeEvent(value: string) {
-    this.dispatchEvent(new CustomEvent('valueChange', { detail: { value } }))
+    this.dispatchEvent(
+      new CustomEvent('valueChange', { detail: { value }, composed: true })
+    )
+  }
+
+  private dispatchChangeEvent() {
+    this.dispatchEvent(
+      new CustomEvent('change', {
+        detail: { value: this.value },
+        composed: true,
+      })
+    )
   }
 
   get editor() {
@@ -172,6 +183,9 @@ export class MarkdownEditor extends LitElement {
           this._value = this.editor.value
         }}
         .value=${this.value}
+        @change=${() => {
+          this.dispatchChangeEvent()
+        }}
       ></textarea>
     `
   }
