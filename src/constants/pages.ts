@@ -14,6 +14,12 @@ export const pages: Page[] = [
     route: '/create',
   },
   {
+    title: '설정',
+    tagName: 'app-config',
+    importPath: '../../pages/app-config.js',
+    route: '/config',
+  },
+  {
     tagName: 'post-detail',
     importPath: '../../pages/post-detail.js',
     route: '/posts/:name',

@@ -1,9 +1,9 @@
 import { css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
+import { navigate } from '../components/dom-router/dom-router.js'
 import '../components/post-card/post-card.js'
 import { Post } from '../types/post.js'
-import fetcher from '../utils/fetcher.js'
-import { navigate } from '../components/dom-router/dom-router.js'
+import { apis } from '../apis/index.js'
 import { PageElement } from './abstracts/page-element.js'
 
 @customElement('post-list')
@@ -26,7 +26,7 @@ export class PostList extends PageElement {
   }
 
   async fetchPosts() {
-    this.posts = await fetcher.get<Post[]>('/posts')
+    this.posts = await apis.getPosts()
   }
 
   openPostDetail(name: string) {
