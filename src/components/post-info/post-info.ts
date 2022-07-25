@@ -1,7 +1,18 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import { Post, PostRef } from '../../types/post.js'
-import fetcher from '../../utils/fetcher.js'
+import { apis } from '../../apis/index.js'
+import { TempPostRef } from '../../types/post-ref.js'
+import { Post, TempPost } from '../../types/post.js'
+import { toLocalizedDateInputValue } from '../../utils/date-util.js'
+import { h2Style, sectionStyle } from '../styles/styles.js'
+// eslint-disable-next-line import/no-duplicates
+import '../reference-selector/reference-selector.js'
+// eslint-disable-next-line import/no-duplicates
+import { ReferenceSelector } from '../reference-selector/reference-selector.js'
+// eslint-disable-next-line import/no-duplicates
+import '../tag-selector/tag-selector.js'
+// eslint-disable-next-line import/no-duplicates
+import { TagSelector } from '../tag-selector/tag-selector.js'
 
 type PostFormType = Omit<
   Post,
@@ -13,10 +24,7 @@ export class PostInfo extends LitElement {
   post?: Post
 
   @property({ type: Array })
-  references: PostRef[] = []
-
-  @property({ type: Array })
-  newTags: string[] = []
+  refCandidates: TempPostRef[] = []
 
   @property({ type: Array })
   private categories: string[] = []
@@ -24,17 +32,12 @@ export class PostInfo extends LitElement {
   @property({ type: Array })
   private posts: Post[] = []
 
-  @property({ type: Array })
-  private tags: string[] = []
-
   @property({ type: String })
   thumbnailObjURL?: string
 
-  private chosenTags: Set<string> = new Set()
-
-  private chosenRefs: Set<Post['references']> = new Set()
-
   static styles = css`
+    ${sectionStyle}
+    ${h2Style}
     :host {
       font-family: sans-serif;
       color: var(--theme-font-color);
@@ -42,16 +45,6 @@ export class PostInfo extends LitElement {
       display: grid;
       grid-template-columns: 1fr;
       gap: 10px;
-    }
-    section {
-      border: 1px dashed var(--theme-red-color);
-      padding: 10px;
-      background-color: var(--theme-light-background-color);
-    }
-    section > h2 {
-      margin: 0 0 10px;
-      padding-bottom: 5px;
-      border-bottom: 1px dashed var(--theme-red-color);
     }
     form {
       display: grid;
@@ -90,65 +83,6 @@ export class PostInfo extends LitElement {
     #thumbnail-selector img {
       margin: auto;
     }
-    #tag-selector > label > input {
-      box-sizing: border-box;
-      border: 1px dashed var(--theme-red-color);
-      outline: none;
-      background-color: transparent;
-      max-width: 180px;
-      height: 30px;
-      margin: auto 0 5px 0;
-      padding: 0 5px;
-    }
-    #tag-selector > div {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-    }
-    #tag-selector #new-tags {
-      border-bottom: 1px dashed var(--theme-red-color);
-      padding: 0 0 5px;
-      margin: 5px 0;
-    }
-    #tag-selector #new-tag-input-label {
-      display: flex;
-    }
-    #tag-selector #new-tag-input {
-      max-width: none;
-      flex: 1;
-    }
-    #tag-selector label {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 5px;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    #tag-selector label > span {
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-    #reference-selector ul {
-      display: grid;
-      gap: 5px;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-    #reference-selector li label {
-      display: grid;
-      grid-template-columns: auto 1fr 1fr;
-      gap: 5px;
-    }
-    #reference-selector input {
-      box-sizing: border-box;
-      border: 1px dashed var(--theme-red-color);
-      outline: none;
-      background-color: transparent;
-      max-width: 180px;
-      height: 30px;
-      margin: auto 0;
-      padding: 0 5px;
-    }
   `
 
   private get thumbnailInput() {
@@ -159,28 +93,33 @@ export class PostInfo extends LitElement {
     return input
   }
 
-  private get tagSelectorInputs() {
-    return Array.from<HTMLInputElement>(
-      this.renderRoot.querySelectorAll('#exists-tags input[type=checkbox]')
-    )
+  private get tagSelector() {
+    const tagSelector =
+      this.renderRoot.querySelector<TagSelector>('tag-selector')
+    if (!tagSelector) throw new Error('Failed to find tag selector')
+
+    return tagSelector
+  }
+
+  private get refSelector() {
+    const refSelector =
+      this.renderRoot.querySelector<ReferenceSelector>('reference-selector')
+    if (!refSelector) throw new Error('Failed to find reference selector')
+
+    return refSelector
   }
 
   protected firstUpdated() {
     this.fetchPosts()
     this.fetchCategories()
-    this.fetchTags()
   }
 
   private async fetchCategories() {
-    this.categories = await fetcher.get<string[]>('/categories')
+    this.categories = await apis.getCategories()
   }
 
   private async fetchPosts() {
-    this.posts = await fetcher.get<Post[]>('/posts')
-  }
-
-  private async fetchTags() {
-    this.tags = await fetcher.get<string[]>('/tags')
+    this.posts = await apis.getPosts()
   }
 
   private get form() {
@@ -190,7 +129,7 @@ export class PostInfo extends LitElement {
     return form
   }
 
-  public serialize(): Post & { thumbnail: File } {
+  public serialize(): { tempPost: TempPost; thumbnail: File } {
     const {
       title,
       description,
@@ -204,17 +143,15 @@ export class PostInfo extends LitElement {
     if (!category) throw new Error('포스팅의 카테고리를 선택해 주세요.')
     if (!publishedAt) throw new Error('포스팅 작성일을 선택해 주세요.')
     if (!description) throw new Error('포스팅의 설명을 입력해 주세요.')
-
     if (!this.thumbnailInput.files?.length)
       throw new Error('포스팅 썸네일 이미지를 선택해 주세요.')
-    if (!this.chosenTags.size) throw new Error('포스팅의 태그를 선택해 주세요.')
 
-    const tags = Array.from([...this.chosenTags, ...this.newTags])
-    const references = this.chosenRefs.size
-      ? (Array.from(this.chosenRefs) as unknown as PostRef[])
-      : undefined
+    const tags = this.tagSelector.selectedTags
+    if (!tags.length) throw new Error('포스팅의 태그를 선택해 주세요.')
 
-    const post: Post = {
+    const references = this.refSelector.selectedRefs
+
+    const tempPost: TempPost = {
       title,
       category,
       publishedAt,
@@ -226,46 +163,15 @@ export class PostInfo extends LitElement {
       references,
     }
 
-    if (prevPostTitle) post.series = { prevPostTitle }
-    if (nextPostTitle) post.series = { ...post.series, nextPostTitle }
+    if (prevPostTitle) tempPost.series = { prevPostTitle }
+    if (nextPostTitle) tempPost.series = { ...tempPost.series, nextPostTitle }
 
-    return { ...post, thumbnail: this.thumbnailInput.files[0] }
-  }
-
-  private newTagChangeHandler(event: Event) {
-    const newTagInput = event.currentTarget as unknown as HTMLInputElement
-    const tags = Array.from(
-      new Set(newTagInput.value.split(',').map((tag) => tag.trim()))
-    )
-    const { newTags, existsTags } = tags.reduce<{
-      newTags: string[]
-      existsTags: string[]
-    }>(
-      (acc, tag) => {
-        if (this.tags.indexOf(tag) >= 0) {
-          acc.existsTags.push(tag)
-        } else {
-          acc.newTags.push(tag)
-        }
-
-        return acc
-      },
-      { newTags: [], existsTags: [] }
-    )
-    this.newTags = newTags
-    newTagInput.value = newTags.join(', ')
-
-    if (existsTags.length && this.tagSelectorInputs.length)
-      this.tagSelectorInputs
-        .filter((input) => existsTags.indexOf(input.value) >= 0)
-        .forEach((input) => {
-          input.setAttribute('checked', '')
-        })
+    return { tempPost, thumbnail: this.thumbnailInput.files[0] }
   }
 
   render() {
     return html`
-      <section>
+      <section class="container">
         <h2>Info</h2>
         <form>
           <label>
@@ -285,7 +191,11 @@ export class PostInfo extends LitElement {
 
           <label>
             <span>작성일</span>
-            <input name="publishedAt" type="date" />
+            <input
+              name="publishedAt"
+              type="date"
+              .value=${toLocalizedDateInputValue(Date.now())}
+            />
           </label>
 
           <label>
@@ -316,7 +226,7 @@ export class PostInfo extends LitElement {
         </form>
       </section>
 
-      <section id="thumbnail-selector">
+      <section id="thumbnail-selector" class="container">
         <h2>Thumbnail</h2>
         <input
           id="thumbnail-input"
@@ -340,68 +250,11 @@ export class PostInfo extends LitElement {
           : ''}
       </section>
 
-      <section id="tag-selector">
-        <h2>Tags</h2>
-        <label id="new-tag-input-label">
-          <input
-            id="new-tag-input"
-            @change=${this.newTagChangeHandler}
-            placeholder="Type new tags here as csv format."
-          />
-        </label>
+      <tag-selector></tag-selector>
 
-        ${this.newTags.length
-          ? html`
-              <div id="new-tags">
-                ${this.newTags.map(
-                  (tag) => html`<label>
-                    <input type="checkbox" checked .value=${tag} disabled />
-                    <span>${tag}</span>
-                  </label>`
-                )}
-              </div>
-            `
-          : ''}
-
-        <div id="exists-tags">
-          ${this.tags.map(
-            (tag) => html` <label>
-              <input
-                type="checkbox"
-                .value=${tag}
-                @change=${(event: Event) => {
-                  const input =
-                    event.currentTarget as unknown as HTMLInputElement
-                  if (!input) return
-                  if (input.checked) {
-                    this.chosenTags.add(tag)
-                  } else {
-                    this.chosenTags.delete(tag)
-                  }
-                }}
-              />
-              <span>${tag}</span>
-            </label>`
-          )}
-        </div>
-      </section>
-
-      <section id="reference-selector">
-        <h2>References</h2>
-        <ul>
-          ${this.references.map(
-            (ref) => html`<li>
-              <label>
-                <input type="checkbox" .value=${ref.url} />
-                <div>
-                  <input .value=${ref.title} />
-                  <input readonly .value=${ref.url} />
-                </div>
-              </label>
-            </li>`
-          )}
-        </ul>
-      </section>
+      <reference-selector
+        .refCandidates=${this.refCandidates}
+      ></reference-selector>
     `
   }
 }

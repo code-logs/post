@@ -9,7 +9,7 @@ import {
 } from '../components/styles/styles.js'
 import { apis } from '../apis/index.js'
 import { PageElement } from './abstracts/page-element.js'
-import { toLocalizedInputValue } from '../utils/date-util.js'
+import { toLocalizedDatetimeInputValue } from '../utils/date-util.js'
 
 @customElement('app-config')
 export class AppConfig extends PageElement {
@@ -53,7 +53,7 @@ export class AppConfig extends PageElement {
                 <input
                   type="datetime-local"
                   readonly
-                  .value=${toLocalizedInputValue(this.lastSyncDatetime)}
+                  .value=${toLocalizedDatetimeInputValue(this.lastSyncDatetime)}
                 />
               </label>
             `

@@ -28,13 +28,25 @@ class Fetcher {
   async post<TRes, TBody>(
     path: string,
     body?: TBody,
-    headers = {}
+    customHeaders = {}
   ): Promise<TRes> {
     try {
+      let data: FormData | string | undefined
+      let headers: Record<string, any> | undefined = {
+        ...this.headers,
+        ...customHeaders,
+      }
+      if (body instanceof FormData) {
+        data = body
+        headers = undefined
+      } else if (body) {
+        data = JSON.stringify(body)
+      }
+
       const response = await fetch(`${this.baseUrl}${path}`, {
         method: 'post',
-        headers: { ...this.headers, ...headers },
-        body: body ? JSON.stringify(body) : undefined,
+        headers,
+        body: data,
       })
 
       const json = await response.json()

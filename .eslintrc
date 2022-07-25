@@ -16,5 +16,8 @@
     "class-methods-use-this": "off",
     "no-alert": "off",
     "no-new": "off"
+  },
+  "globals": {
+    "NodeJS": true
   }
 }

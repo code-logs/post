@@ -1,9 +1,9 @@
-export interface PostRef {
-  title: string
-  url: string
-}
+import { PostRef, TempPostRef } from './post-ref.js'
+import { Series, TempSeries } from './series.js'
+import { Tag, TempTag } from './tag.js'
 
 export interface Post {
+  id: string
   title: string
   fileName: string
   description: string
@@ -11,10 +11,17 @@ export interface Post {
   published: boolean
   publishedAt: string
   thumbnailName: string
-  tags: string[]
-  references?: PostRef[]
-  series?: {
-    prevPostTitle?: string
-    nextPostTitle?: string
-  }
+  content: string
+  tags: Tag[]
+  references: PostRef[]
+  series?: Series
+}
+
+export interface TempPost
+  extends Omit<Post, 'id' | 'tags' | 'references' | 'series' | 'content'> {
+  id?: string
+  tags: TempTag[]
+  references?: TempPostRef[]
+  series?: TempSeries
+  content?: string
 }
