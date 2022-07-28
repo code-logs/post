@@ -1,7 +1,7 @@
 import { css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import { marked } from 'marked'
 import { apis } from '../apis/index.js'
+import { navigate } from '../components/dom-router/dom-router.js'
 import '../components/markdown-view-editor/markdown-view-editor.js'
 // eslint-disable-next-line import/no-duplicates
 import '../components/post-info/post-info.js'
@@ -13,11 +13,12 @@ import { PageElement } from './abstracts/page-element.js'
 
 @customElement('create-post')
 export class CreatePost extends PageElement {
-  pageTitle: string = 'Post Logs - 글쓰기'
+  pageTitle: string = 'Post Logs | 글쓰기'
 
   @property({ type: Array })
   refCandidates: TempPostRef[] = []
 
+  @property({ type: String })
   private content?: string
 
   static styles = css`
@@ -55,69 +56,26 @@ export class CreatePost extends PageElement {
     return postInfo
   }
 
-  private searchReferences(markdownContent: string) {
-    const tempContainer = document.createElement('div')
-    tempContainer.innerHTML = marked.parse(markdownContent)
-    const anchorTags = tempContainer.querySelectorAll<HTMLAnchorElement>('a')
-    if (!anchorTags.length) this.refCandidates = []
-
-    const tempRefCandidates: TempPostRef[] = []
-    const hrefList = new Set()
-    anchorTags.forEach((anchorTag) => {
-      const { href, innerText } = anchorTag
-      if (
-        href &&
-        !hrefList.has(href) &&
-        !href.startsWith(window.location.origin)
-      ) {
-        hrefList.add(href)
-        tempRefCandidates.push({
-          title: innerText || href,
-          url: href,
-        })
-      }
-    })
-
-    this.refCandidates = [...tempRefCandidates]
-    tempContainer.remove()
-  }
-
   private async createPostHandler() {
-    try {
-      const { tempPost, thumbnail } = this.postInfo.serialize()
-      if (!this.content) throw new Error('작성된 포스팅이 없습니다.')
+    const { tempPost, thumbnail } = this.postInfo.serialize()
+    if (!this.content) throw new Error('작성된 포스팅이 없습니다.')
 
-      await apis.createPost(tempPost, this.content, thumbnail)
+    await apis.createPost(tempPost, this.content, thumbnail!)
 
-      if (tempPost.published) {
-        alert('새로운 포스트가 등록되어 배포중 입니다.')
-      } else {
-        alert('새로운 포스트가 등록 되었습니다.')
-      }
-
-      // navigate('/')
-    } catch (e) {
-      if (e instanceof Error) {
-        alert(e.message)
-      } else {
-        alert('Unexpected error occurred')
-      }
-
-      throw e
-    }
+    alert('새로운 포스트가 등록 됐습니다.')
+    navigate('/')
   }
 
   render() {
     const valueChangeHandler = debounce((event: Event) => {
       if (event instanceof CustomEvent) {
         const { value } = (event as CustomEvent<{ value: string }>).detail
-        this.searchReferences(value)
         this.content = value
       }
     })
 
     return html`<section id="create-post">
-      <post-info .refCandidates=${this.refCandidates}></post-info>
+      <post-info .content=${this.content || ''} createMode></post-info>
 
       <markdown-view-editor
         @valueChange=${valueChangeHandler}

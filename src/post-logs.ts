@@ -1,9 +1,10 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
-import './components/menu-list/menu-list.js'
 import './components/app-title/app-title.js'
-import { pages } from './constants/pages.js'
 import { Page } from './components/dom-router/types/page.js'
+import './components/menu-list/menu-list.js'
+import './components/modal-spinner/modal-spinner.js'
+import { pages } from './constants/pages.js'
 
 @customElement('post-logs')
 export class PostLogs extends LitElement {
@@ -34,6 +35,8 @@ export class PostLogs extends LitElement {
 
   render() {
     return html`
+      <modal-spinner></modal-spinner>
+
       <header>
         <app-title title="Post Logs"></app-title>
         <nav>

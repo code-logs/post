@@ -1,10 +1,9 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { apis } from '../../apis/index.js'
-import { TempPostRef } from '../../types/post-ref.js'
 import { Post, TempPost } from '../../types/post.js'
 import { toLocalizedDateInputValue } from '../../utils/date-util.js'
-import { h2Style, sectionStyle } from '../styles/styles.js'
+import { h2Style, inputStyle, sectionStyle } from '../styles/styles.js'
 // eslint-disable-next-line import/no-duplicates
 import '../reference-selector/reference-selector.js'
 // eslint-disable-next-line import/no-duplicates
@@ -13,6 +12,7 @@ import { ReferenceSelector } from '../reference-selector/reference-selector.js'
 import '../tag-selector/tag-selector.js'
 // eslint-disable-next-line import/no-duplicates
 import { TagSelector } from '../tag-selector/tag-selector.js'
+import { BASE_URL } from '../../constants/base-url.js'
 
 type PostFormType = Omit<
   Post,
@@ -23,8 +23,8 @@ export class PostInfo extends LitElement {
   @property({ type: Object })
   post?: Post
 
-  @property({ type: Array })
-  refCandidates: TempPostRef[] = []
+  @property({ type: String })
+  content!: string
 
   @property({ type: Array })
   private categories: string[] = []
@@ -35,9 +35,13 @@ export class PostInfo extends LitElement {
   @property({ type: String })
   thumbnailObjURL?: string
 
+  @property({ type: Boolean })
+  createMode: boolean = false
+
   static styles = css`
     ${sectionStyle}
     ${h2Style}
+    ${inputStyle}
     :host {
       font-family: sans-serif;
       color: var(--theme-font-color);
@@ -57,31 +61,20 @@ export class PostInfo extends LitElement {
       gap: 5px;
     }
     form > label.description {
-      grid-row-start: 2;
       grid-column: 1 / 5;
     }
     form > label.description > input {
       max-width: inherit;
     }
-    form input,
-    form select {
-      box-sizing: border-box;
-      border: 1px dashed var(--theme-red-color);
-      outline: none;
-      background-color: transparent;
-      max-width: 180px;
-      height: 30px;
-      margin: auto 0;
-      padding: 0 5px;
-    }
-    form input[type='checkbox'] {
-      margin: auto auto auto 0;
-    }
     #thumbnail-selector {
       display: grid;
     }
     #thumbnail-selector img {
-      margin: auto;
+      margin: 10px auto;
+    }
+    #thumbnail-selector .thumbnail-preview {
+      max-height: 300px;
+      max-width: 100%;
     }
   `
 
@@ -129,21 +122,22 @@ export class PostInfo extends LitElement {
     return form
   }
 
-  public serialize(): { tempPost: TempPost; thumbnail: File } {
+  public serialize(): { tempPost: TempPost; thumbnail?: File } {
     const {
       title,
       description,
       category,
       publishedAt,
-      published,
+      published = false,
       nextPostTitle,
       prevPostTitle,
     } = Object.fromEntries(new FormData(this.form)) as unknown as PostFormType
     if (!title) throw new Error('포스팅의 제목을 입력해 주세요.')
     if (!category) throw new Error('포스팅의 카테고리를 선택해 주세요.')
-    if (!publishedAt) throw new Error('포스팅 작성일을 선택해 주세요.')
+    if (!this.createMode && !publishedAt)
+      throw new Error('포스팅 작성일을 선택해 주세요.')
     if (!description) throw new Error('포스팅의 설명을 입력해 주세요.')
-    if (!this.thumbnailInput.files?.length)
+    if (!this.thumbnailInput.files?.length && !this.post?.thumbnailName)
       throw new Error('포스팅 썸네일 이미지를 선택해 주세요.')
 
     const tags = this.tagSelector.selectedTags
@@ -157,8 +151,10 @@ export class PostInfo extends LitElement {
       publishedAt,
       published,
       description,
-      thumbnailName: this.thumbnailInput.files[0].name,
-      fileName: `${category.toLocaleLowerCase()}-${title.toLowerCase()}-${publishedAt}.md`,
+      fileName: `${category.toLowerCase()}-${title.toLowerCase()}.md`.replace(
+        / +/g,
+        '-'
+      ),
       tags,
       references,
     }
@@ -166,7 +162,16 @@ export class PostInfo extends LitElement {
     if (prevPostTitle) tempPost.series = { prevPostTitle }
     if (nextPostTitle) tempPost.series = { ...tempPost.series, nextPostTitle }
 
-    return { tempPost, thumbnail: this.thumbnailInput.files[0] }
+    const result: { tempPost: TempPost; thumbnail?: File } = {
+      tempPost,
+    }
+
+    if (this.thumbnailInput.files?.[0]) {
+      const [thumbnail] = this.thumbnailInput.files
+      result.thumbnail = thumbnail
+    }
+
+    return result
   }
 
   render() {
@@ -176,12 +181,16 @@ export class PostInfo extends LitElement {
         <form>
           <label>
             <span>제목</span>
-            <input name="title" />
+            <input name="title" .value=${this.post?.title || ''} />
           </label>
 
           <label>
             <span>카테고리</span>
-            <input list="category" name="category" />
+            <input
+              list="category"
+              name="category"
+              .value=${this.post?.category || ''}
+            />
             <datalist id="category">
               ${this.categories.map(
                 (category) => html`<option>${category}</option>`
@@ -194,25 +203,32 @@ export class PostInfo extends LitElement {
             <input
               name="publishedAt"
               type="date"
-              .value=${toLocalizedDateInputValue(Date.now())}
+              .value=${this.post?.publishedAt ||
+              toLocalizedDateInputValue(Date.now())}
             />
           </label>
 
           <label>
-            <span>배포</span>
-            <input name="published" type="checkbox" />
-          </label>
-
-          <label class="description">
-            <span>설명</span>
-            <input name="description" />
+            <span>배포여부</span>
+            <input
+              name="published"
+              type="checkbox"
+              ?checked=${this.post?.published || false}
+            />
           </label>
 
           <label>
             <span>이전글</span>
             <select name="prevPostTitle">
               <option></option>
-              ${this.posts.map((post) => html`<option>${post.title}</option>`)}
+              ${this.posts.map(
+                (post) =>
+                  html`<option
+                    ?selected=${this.post?.series?.prevPostTitle === post.title}
+                  >
+                    ${post.title}
+                  </option>`
+              )}
             </select>
           </label>
 
@@ -220,8 +236,20 @@ export class PostInfo extends LitElement {
             <span>다음글</span>
             <select name="nextPostTitle">
               <option></option>
-              ${this.posts.map((post) => html`<option>${post.title}</option>`)}
+              ${this.posts.map(
+                (post) =>
+                  html`<option
+                    ?selected=${this.post?.series?.nextPostTitle === post.title}
+                  >
+                    ${post.title}
+                  </option>`
+              )}
             </select>
+          </label>
+
+          <label class="description">
+            <span>설명</span>
+            <input name="description" .value=${this.post?.description || ''} />
           </label>
         </form>
       </section>
@@ -245,15 +273,22 @@ export class PostInfo extends LitElement {
           }}
         />
 
-        ${this.thumbnailObjURL
-          ? html`<img src=${this.thumbnailObjURL} alt="Thumbnail preview" />`
+        ${this.post?.thumbnailName || this.thumbnailObjURL
+          ? html`<img
+              class="thumbnail-preview"
+              src=${this.thumbnailObjURL
+                ? this.thumbnailObjURL
+                : `${BASE_URL}/${this.post?.thumbnailName}`}
+              alt=${this.post?.thumbnailName || 'Thumbnail preview'}
+            />`
           : ''}
       </section>
 
-      <tag-selector></tag-selector>
+      <tag-selector .chosenTags=${this.post?.tags || []}></tag-selector>
 
       <reference-selector
-        .refCandidates=${this.refCandidates}
+        .references=${this.post?.references || []}
+        .content=${this.content}
       ></reference-selector>
     `
   }

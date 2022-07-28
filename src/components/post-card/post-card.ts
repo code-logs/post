@@ -1,6 +1,8 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
+import { BASE_URL } from '../../constants/base-url.js'
 import { Post } from '../../types/post.js'
+import { navigate } from '../dom-router/dom-router.js'
 
 @customElement('post-card')
 export class PostCard extends LitElement {
@@ -56,9 +58,20 @@ export class PostCard extends LitElement {
     }
   `
 
+  private openPostDetail() {
+    const name = this.post.fileName.replace(/\.md$/, '')
+    navigate(`/posts/${name}`)
+  }
+
   render() {
     return html`
-      <section class="post-card">
+      <section
+        class="post-card"
+        @click=${this.openPostDetail}
+        @keydown=${(e: KeyboardEvent) => {
+          if (e.key === 'enter') this.openPostDetail()
+        }}
+      >
         <div>
           <header>
             <h2 class="title">${this.post.title}</h2>
@@ -76,7 +89,7 @@ export class PostCard extends LitElement {
           html`<img
             class="thumbnail"
             alt="${this.post.title}"
-            src=${`https://code-logs.github.io/assets/images/${this.post.thumbnailName}`}
+            src=${`${BASE_URL}/${this.post.thumbnailName}`}
           />`}
         </div>
       </section>

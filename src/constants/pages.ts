@@ -14,6 +14,12 @@ export const pages: Page[] = [
     route: '/create',
   },
   {
+    title: '배포하기',
+    tagName: 'deploy-post',
+    importPath: '../../pages/deploy-post.js',
+    route: '/deploy',
+  },
+  {
     title: '설정',
     tagName: 'app-config',
     importPath: '../../pages/app-config.js',

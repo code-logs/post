@@ -18,6 +18,18 @@ export const inputStyle = css`
   input[type='checkbox'] {
     margin: auto auto auto 0;
   }
+  input[type='file'] {
+    height: inherit;
+    border: none;
+    max-width: inherit;
+  }
+  input:focus,
+  select:focus {
+    border-style: solid;
+  }
+  input[type='file']:focus {
+    border-style: none;
+  }
 `
 
 export const labelStyle = css`
@@ -39,6 +51,14 @@ export const h2Style = css`
   }
 `
 
+export const h3Style = css`
+  h3 {
+    margin: 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed var(--theme-red-color);
+  }
+`
+
 export const sectionStyle = css`
   section.container {
     border: 1px dashed var(--theme-red-color);
@@ -48,11 +68,11 @@ export const sectionStyle = css`
 `
 
 export const buttonBoxStyle = css`
-  section.button-container {
+  .button-container {
     display: grid;
+    grid-auto-flow: column;
     gap: 10px;
     justify-content: end;
-    margin-top: 10px;
   }
 
   button {
@@ -68,5 +88,8 @@ export const buttonBoxStyle = css`
   }
   button:active {
     transform: scale(1, 1);
+  }
+  button[danger] {
+    color: var(--theme-red-color);
   }
 `

@@ -10,9 +10,10 @@ export class TagSelector extends LitElement {
   private tags: Tag[] = []
 
   @property({ type: Array })
-  newTags: TempTag[] = []
+  chosenTags: (Tag | TempTag)[] = []
 
-  private chosenTags: (Tag | TempTag)[] = []
+  @property({ type: Array })
+  newTags: TempTag[] = []
 
   static styles = css`
     ${sectionStyle}
@@ -65,7 +66,12 @@ export class TagSelector extends LitElement {
   private newTagChangeHandler(event: Event) {
     const newTagInput = event.currentTarget as unknown as HTMLInputElement
     const tags = Array.from(
-      new Set(newTagInput.value.split(',').map((tag) => tag.trim()))
+      new Set(
+        newTagInput.value
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter((tag) => tag)
+      )
     )
     const { newTags, existsTags } = tags.reduce<{
       newTags: TempTag[]
@@ -105,14 +111,32 @@ export class TagSelector extends LitElement {
     this.tags = await apis.getTags()
   }
 
-  public get selectedTags() {
-    return [...this.chosenTags, ...this.newTags]
+  public get selectedTags(): (Tag | TempTag)[] {
+    const existsTags = Array.from(
+      this.renderRoot.querySelectorAll<HTMLInputElement>(
+        'input[type=checkbox].exists-tag'
+      )
+    )
+      .filter(({ checked }) => checked)
+      .map(({ id, value }) => ({ id, name: value } as Tag))
+    const newTags = Array.from(
+      this.renderRoot.querySelectorAll<HTMLInputElement>(
+        'input[type=checkbox].new-tag'
+      )
+    )
+      .filter(({ checked }) => checked)
+      .map(({ value }) => ({ name: value } as TempTag))
+
+    return [...existsTags, ...newTags]
   }
 
   render() {
     return html`
       <section id="tag-selector" class="container">
-        <h2>Tags</h2>
+        <header>
+          <h2>Tags</h2>
+        </header>
+
         <label id="new-tag-input-label">
           <input
             id="new-tag-input"
@@ -127,6 +151,7 @@ export class TagSelector extends LitElement {
                 ${this.newTags.map(
                   (tag) => html`<label>
                     <input
+                      class="new-tag"
                       type="checkbox"
                       checked
                       .value=${tag.name}
@@ -143,20 +168,13 @@ export class TagSelector extends LitElement {
           ${this.tags.map(
             (tag) => html` <label>
               <input
+                class="exists-tag"
                 type="checkbox"
+                ?checked=${this.chosenTags.findIndex(
+                  ({ name }) => name === tag.name
+                ) >= 0}
+                id=${tag.id}
                 .value=${tag.name}
-                @change=${(event: Event) => {
-                  const input =
-                    event.currentTarget as unknown as HTMLInputElement
-                  if (!input) return
-                  if (input.checked) {
-                    this.chosenTags.push(tag)
-                  } else {
-                    this.chosenTags = this.chosenTags.filter(
-                      ({ name }) => tag.name !== name
-                    )
-                  }
-                }}
               />
               <span>${tag.name}</span>
             </label>`

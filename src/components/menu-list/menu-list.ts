@@ -35,6 +35,13 @@ export class MenuList extends LitElement {
     }
   `
 
+  constructor() {
+    super()
+    window.addEventListener('popstate', () => {
+      this.requestUpdate()
+    })
+  }
+
   render() {
     return html`
       <ul>
@@ -64,11 +71,11 @@ export class MenuList extends LitElement {
   }
 
   private isActiveMenu(route: string) {
-    return (this.activeRoute || window.location.pathname) === route
+    return window.location.pathname === route
   }
 
   private moveToPage(route: string) {
-    this.activeRoute = route
     navigate(route)
+    this.requestUpdate()
   }
 }

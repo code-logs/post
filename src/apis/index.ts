@@ -22,6 +22,32 @@ export const apis = {
     })
   },
 
+  async updatePost(
+    postId: string,
+    tempPost: TempPost,
+    content: string,
+    thumbnail?: File
+  ) {
+    const formData = new FormData()
+    formData.append('tempPost', JSON.stringify(tempPost))
+    formData.append('content', content)
+    if (thumbnail) formData.append('thumbnail', thumbnail)
+
+    return fetcher.put<Post, FormData>(`/posts/${postId}`, formData, {
+      'content-type': 'multipart/form-data',
+    })
+  },
+
+  async deletePost(postFilename: string) {
+    await fetcher.delete<void>(`/posts/${postFilename.replace(/\.md$/, '')}`)
+  },
+
+  async unpublish(postId: string) {
+    return fetcher.post<Post, { id: string }>('/posts/unpublish', {
+      id: postId,
+    })
+  },
+
   async getCategories() {
     return fetcher.get<string[]>('/categories')
   },
@@ -36,5 +62,9 @@ export const apis = {
 
   async syncRepository() {
     return fetcher.post<boolean, void>('/configurations/sync-repository')
+  },
+
+  async getModifiedPosts() {
+    return fetcher.get<Post[]>('/modified-posts')
   },
 }

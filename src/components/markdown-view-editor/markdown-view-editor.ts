@@ -12,17 +12,24 @@ export class MarkdownViewEditor extends LitElement {
   content: string = ''
 
   static styles = css`
-    #editor {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    #header {
+      margin-bottom: 10px;
+    }
+    #header label {
+      display: inline-flex;
+    }
+    #header span {
+      font-size: 0.8rem;
+      margin: auto 0;
     }
   `
 
   render() {
     return html`
       <section>
-        <header>
+        <header id="header">
           <label>
+            <span>Preview</span>
             <input
               type="checkbox"
               .checked=${Boolean(this.enablePreview)}
@@ -30,7 +37,6 @@ export class MarkdownViewEditor extends LitElement {
                 this.enablePreview = !this.enablePreview
               }}
             />
-            <span>Preview</span>
           </label>
         </header>
 

@@ -15,13 +15,27 @@ export interface Post {
   tags: Tag[]
   references: PostRef[]
   series?: Series
+  isCreated: boolean
+  isUpdated: boolean
 }
 
 export interface TempPost
-  extends Omit<Post, 'id' | 'tags' | 'references' | 'series' | 'content'> {
+  extends Omit<
+    Post,
+    | 'id'
+    | 'tags'
+    | 'references'
+    | 'series'
+    | 'content'
+    | 'thumbnailName'
+    | 'publishedAt'
+    | 'isCreated'
+    | 'isUpdated'
+  > {
   id?: string
   tags: TempTag[]
   references?: TempPostRef[]
   series?: TempSeries
   content?: string
+  publishedAt?: string
 }
