@@ -149,7 +149,7 @@ export class PostInfo extends LitElement {
       title,
       category,
       publishedAt,
-      published,
+      published: Boolean(published),
       description,
       fileName: `${category.toLowerCase()}-${title.toLowerCase()}.md`.replace(
         / +/g,

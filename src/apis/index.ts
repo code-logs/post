@@ -42,10 +42,8 @@ export const apis = {
     await fetcher.delete<void>(`/posts/${postFilename.replace(/\.md$/, '')}`)
   },
 
-  async unpublish(postId: string) {
-    return fetcher.post<Post, { id: string }>('/posts/unpublish', {
-      id: postId,
-    })
+  async deployPosts() {
+    return fetcher.post<Post, { result: boolean }>('/deploy')
   },
 
   async getCategories() {
@@ -66,5 +64,16 @@ export const apis = {
 
   async getModifiedPosts() {
     return fetcher.get<Post[]>('/modified-posts')
+  },
+
+  async getTemplate() {
+    return fetcher.get<string | null>('/configurations/template')
+  },
+
+  async saveTemplate(content: string) {
+    return fetcher.post<string, { content: string }>(
+      '/configurations/save-template',
+      { content }
+    )
   },
 }

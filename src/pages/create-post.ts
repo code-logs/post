@@ -1,4 +1,4 @@
-import { css, html } from 'lit'
+import { css, html, PropertyValues } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { apis } from '../apis/index.js'
 import { navigate } from '../components/dom-router/dom-router.js'
@@ -20,6 +20,9 @@ export class CreatePost extends PageElement {
 
   @property({ type: String })
   private content?: string
+
+  @property({ type: String })
+  private template: string | null = null
 
   static styles = css`
     section#create-post {
@@ -48,6 +51,15 @@ export class CreatePost extends PageElement {
       transform: scale(1, 1);
     }
   `
+
+  protected firstUpdated(changedProps: PropertyValues) {
+    super.firstUpdated(changedProps)
+    this.getTemplate()
+  }
+
+  private async getTemplate() {
+    this.template = await apis.getTemplate()
+  }
 
   get postInfo() {
     const postInfo = this.renderRoot.querySelector<PostInfo>('post-info')
@@ -79,6 +91,7 @@ export class CreatePost extends PageElement {
 
       <markdown-view-editor
         @valueChange=${valueChangeHandler}
+        .content=${this.template || ''}
       ></markdown-view-editor>
 
       <section id="button-container">

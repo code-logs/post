@@ -5,7 +5,7 @@ import StringUtil from '../../utils/string-util.js'
 @customElement('markdown-editor')
 export class MarkdownEditor extends LitElement {
   @property({ type: String })
-  readonly value: string = ''
+  value: string = ''
 
   private set _value(value: string) {
     this.dispatchValueChangeEvent(value)
@@ -29,6 +29,9 @@ export class MarkdownEditor extends LitElement {
       overflow: auto;
       box-sizing: border-box;
       resize: none;
+    }
+    #editor:focus {
+      border-style: solid;
     }
     #editor::-webkit-scrollbar {
       cursor: default;
@@ -172,6 +175,15 @@ export class MarkdownEditor extends LitElement {
       await this.updateComplete
       this.placeCaret(selectionStart - 1)
     }
+  }
+
+  public reset() {
+    this._value = ''
+    this.editor.value = ''
+  }
+
+  public focus() {
+    this.editor.focus()
   }
 
   render() {

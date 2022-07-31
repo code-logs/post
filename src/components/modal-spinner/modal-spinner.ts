@@ -8,7 +8,7 @@ export class ModalSpinner extends LitElement {
 
   static styles = css`
     #modal {
-      position: absolute;
+      position: fixed;
       left: 0;
       right: 0;
       top: 0;
