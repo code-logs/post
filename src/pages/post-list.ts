@@ -5,6 +5,7 @@ import '../components/post-card/post-card.js'
 import { inputStyle, labelStyle } from '../components/styles/styles.js'
 import { Post } from '../types/post.js'
 import { PageElement } from './abstracts/page-element.js'
+import './pages.js'
 
 @customElement('post-list')
 export class PostList extends PageElement {
