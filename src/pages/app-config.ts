@@ -112,6 +112,24 @@ export class AppConfig extends PageElement {
 
   render() {
     return html`<section id="config">
+      <section id="template" class="container">
+        <header>
+          <h2>Template</h2>
+        </header>
+
+        <markdown-editor
+          @valueChange=${(event: CustomEvent<{ value: string }>) => {
+            const { value } = event.detail
+            this.templateContent = value
+          }}
+          .value=${this.template || ''}
+        ></markdown-editor>
+
+        <section class="button-container">
+          <button @click=${this.saveTemplate}>Save Template</button>
+        </section>
+      </section>
+
       <section id="repo-sync" class="container">
         <header>
           <h2>Repository Sync</h2>
@@ -134,24 +152,6 @@ export class AppConfig extends PageElement {
 
         <section class="button-container">
           <button @click=${this.syncRepository}>Sync</button>
-        </section>
-      </section>
-
-      <section id="template" class="container">
-        <header>
-          <h2>Template</h2>
-        </header>
-
-        <markdown-editor
-          @valueChange=${(event: CustomEvent<{ value: string }>) => {
-            const { value } = event.detail
-            this.templateContent = value
-          }}
-          .value=${this.template || ''}
-        ></markdown-editor>
-
-        <section class="button-container">
-          <button @click=${this.saveTemplate}>Save Template</button>
         </section>
       </section>
     </section> `
