@@ -5,6 +5,7 @@ import { Page } from './components/dom-router/types/page.js'
 import './components/menu-list/menu-list.js'
 import './components/modal-spinner/modal-spinner.js'
 import { pages } from './constants/pages.js'
+import './pages/index.js'
 
 @customElement('post-logs')
 export class PostLogs extends LitElement {

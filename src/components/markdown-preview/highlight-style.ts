@@ -15,10 +15,6 @@ export default css`
     border-radius: 4px;
     box-shadow: var(--common-shadow);
     line-height: var(--wide-spacing);
-
-    @media (prefers-color-scheme: dark) {
-      box-shadow: none;
-    }
   }
   .hljs-comment {
     color: #506686;

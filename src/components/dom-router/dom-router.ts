@@ -84,7 +84,6 @@ export class DomRouter extends LitElement {
 
   private async mount(targetPage: Page) {
     if (!this.loadedPageRoutes.has(targetPage.route)) {
-      await this.importPage(targetPage)
       this.loadedPageRoutes.add(targetPage.route)
     }
 
@@ -97,10 +96,6 @@ export class DomRouter extends LitElement {
     const pageElement = this.currentPageElement
     pageElement?.removeAttribute(this.PAGE_ACTIVE_FLAG)
     pageElement?.remove()
-  }
-
-  private async importPage(targetPage: Page) {
-    await import(targetPage.importPath)
   }
 
   private async appendPage(targetPage: Page) {
