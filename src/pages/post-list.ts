@@ -2,7 +2,11 @@ import { css, html } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { apis } from '../apis/index.js'
 import '../components/post-card/post-card.js'
-import { inputStyle, labelStyle } from '../components/styles/styles.js'
+import {
+  sectionStyle,
+  inputStyle,
+  labelStyle,
+} from '../components/styles/styles.js'
 import { Post } from '../types/post.js'
 import { PageElement } from './abstracts/page-element.js'
 
@@ -19,6 +23,7 @@ export class PostList extends PageElement {
   static styles = css`
     ${labelStyle}
     ${inputStyle}
+    ${sectionStyle}
     #post-list {
       display: grid;
       gap: 10px;
@@ -57,19 +62,21 @@ export class PostList extends PageElement {
 
     return html`
       <section id="post-list">
-        <form id="search-form">
-          <label>
-            <span>Keyword</span>
-            <input
-              type="search"
-              placeholder="Search..."
-              @input=${(event: Event) => {
-                const input = event.currentTarget as HTMLInputElement
-                this.keyword = input.value
-              }}
-            />
-          </label>
-        </form>
+        <section id="search" class="container">
+          <form id="search-form">
+            <label>
+              <span>Keyword</span>
+              <input
+                type="search"
+                placeholder="Search..."
+                @input=${(event: Event) => {
+                  const input = event.currentTarget as HTMLInputElement
+                  this.keyword = input.value
+                }}
+              />
+            </label>
+          </form>
+        </section>
         <ul>
           ${posts.map(
             (post) =>

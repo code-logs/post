@@ -12,6 +12,11 @@ export class MarkdownViewEditor extends LitElement {
   content: string = ''
 
   static styles = css`
+    :host {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
     #header {
       margin-bottom: 10px;
     }
@@ -21,6 +26,11 @@ export class MarkdownViewEditor extends LitElement {
     #header span {
       font-size: 0.8rem;
       margin: auto 0;
+    }
+    section {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
     }
   `
 

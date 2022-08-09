@@ -1,3 +1,4 @@
+import { ArticleMaterial } from '../types/article-material.js'
 import { Post, TempPost } from '../types/post.js'
 import { Tag } from '../types/tag.js'
 import fetcher from '../utils/fetcher.js'
@@ -75,5 +76,17 @@ export const apis = {
       '/configurations/save-template',
       { content }
     )
+  },
+
+  async getArticleMaterials() {
+    return fetcher.get<ArticleMaterial[]>('/article-materials')
+  },
+
+  async getTotalPostCount() {
+    return fetcher.get<number>('/total-post-count')
+  },
+
+  async getLastPostingDate() {
+    return fetcher.get<number | null>('/last-posting-date')
   },
 }
