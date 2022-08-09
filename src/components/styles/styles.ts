@@ -2,6 +2,7 @@ import { css } from 'lit'
 
 export const inputStyle = css`
   input,
+  textarea,
   select {
     font-family: sans-serif;
     color: var(--theme-font-color);
@@ -14,6 +15,16 @@ export const inputStyle = css`
     height: 30px;
     margin: auto 0;
     padding: 0 5px;
+  }
+  textarea {
+    padding: 5px;
+  }
+  textarea::-webkit-scrollbar {
+    cursor: default;
+    width: 5px;
+  }
+  textarea::-webkit-scrollbar-thumb {
+    background-color: var(--theme-red-color);
   }
   input[type='checkbox'] {
     margin: auto auto auto 0;
@@ -61,6 +72,8 @@ export const h3Style = css`
 
 export const sectionStyle = css`
   section.container {
+    display: flex;
+    flex-direction: column;
     border: 1px dashed var(--theme-red-color);
     padding: 10px;
     background-color: var(--theme-light-background-color);

@@ -63,8 +63,10 @@ export class PostInfo extends LitElement {
     form > label.description {
       grid-column: 1 / 5;
     }
-    form > label.description > input {
+    form > label.description > textarea {
       max-width: inherit;
+      height: 200px;
+      resize: none;
     }
     #thumbnail-selector {
       display: grid;
@@ -249,7 +251,10 @@ export class PostInfo extends LitElement {
 
           <label class="description">
             <span>설명</span>
-            <input name="description" .value=${this.post?.description || ''} />
+            <textarea
+              name="description"
+              .value=${this.post?.description || ''}
+            ></textarea>
           </label>
         </form>
       </section>
