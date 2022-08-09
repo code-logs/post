@@ -36,6 +36,11 @@ export class PostDetail extends PageElement {
       grid-template-columns: 1fr;
       gap: 10px;
     }
+    #view-editor-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 700px;
+    }
   `
 
   constructor() {
@@ -112,11 +117,13 @@ export class PostDetail extends PageElement {
           .content=${this.content || this.post.content}
         ></post-info>
 
-        <markdown-view-editor
-          enablePreview
-          @valueChange=${valueChangeHandler}
-          .content=${this.post.content}
-        ></markdown-view-editor>
+        <div id="view-editor-container">
+          <markdown-view-editor
+            enablePreview
+            @valueChange=${valueChangeHandler}
+            .content=${this.post.content}
+          ></markdown-view-editor>
+        </div>
 
         <div class="button-container">
           ${this.post.isCreated

@@ -15,7 +15,7 @@ export class ModalSpinner extends LitElement {
       bottom: 0;
       height: 100vh;
       background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1;
+      z-index: 10;
       transition: opacity 0.3s ease-in-out 0s;
       pointer-events: none;
       opacity: 0;
@@ -28,7 +28,7 @@ export class ModalSpinner extends LitElement {
     #message {
       position: absolute;
       left: 50%;
-      top: 30%;
+      top: 50%;
       transform: translate(-50%, -50%);
       font-weight: 700;
       font-size: 1.2rem;

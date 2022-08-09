@@ -30,6 +30,14 @@ export class CreatePost extends PageElement {
       grid-template-columns: 1fr;
       gap: 10px;
     }
+    #view-editor-container {
+      display: flex;
+      flex-direction: column;
+      height: 700px;
+    }
+    markdown-view-editor {
+      flex: 1;
+    }
     section#button-container {
       display: grid;
       gap: 10px;
@@ -89,10 +97,12 @@ export class CreatePost extends PageElement {
     return html`<section id="create-post">
       <post-info .content=${this.content || ''} createMode></post-info>
 
-      <markdown-view-editor
-        @valueChange=${valueChangeHandler}
-        .content=${this.template || ''}
-      ></markdown-view-editor>
+      <div id="view-editor-container">
+        <markdown-view-editor
+          @valueChange=${valueChangeHandler}
+          .content=${this.template || ''}
+        ></markdown-view-editor>
+      </div>
 
       <section id="button-container">
         <button @click=${this.createPostHandler}>저장</button>

@@ -14,6 +14,7 @@ export class MarkdownEditor extends LitElement {
   static styles = css`
     :host {
       display: flex;
+      flex: 1;
     }
     #editor {
       font-family: sans-serif;
@@ -23,12 +24,12 @@ export class MarkdownEditor extends LitElement {
       padding: 10px;
       border: 1px dashed var(--theme-red-color);
       width: 100%;
-      height: 700px;
       outline: none;
       tab-size: 2;
       overflow: auto;
       box-sizing: border-box;
       resize: none;
+      max-height: 700px;
     }
     #editor:focus {
       border-style: solid;
@@ -103,11 +104,11 @@ export class MarkdownEditor extends LitElement {
 
   private duplicatePrevFragment() {
     const prevLineContent = this.getFrontContent()
-    const regex = /(.?)+([0-9]\.|- |> )/
+    const regex = /(\s?)+([0-9]\. |- |> )/
     if (regex.test(prevLineContent)) {
       const matched = prevLineContent.match(regex)
       if (matched) {
-        this.appendText(`\n${matched[0]}`)
+        this.appendText(`\n${matched[matched.length - 1]}`)
         return true
       }
     }
@@ -131,10 +132,12 @@ export class MarkdownEditor extends LitElement {
     const rear = StringUtil.splitByIndex(this.value, selectionEnd)[1]
     this._value = `${front}${text}${rear}`
     await this.updateComplete
-    this.editor.setSelectionRange(
-      selectionStart + text.length,
-      selectionStart + text.length
-    )
+    setTimeout(() => {
+      this.editor.setSelectionRange(
+        selectionStart + text.length,
+        selectionStart + text.length
+      )
+    })
   }
 
   private async appendTab() {

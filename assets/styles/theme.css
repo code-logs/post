@@ -19,9 +19,5 @@ body {
   background-color: var(--theme-background-color);
 }
 body::-webkit-scrollbar {
-  cursor: default;
-  width: 5px;
-}
-body::-webkit-scrollbar-thumb {
-  background-color: var(--theme-red-color);
+  display: none;
 }
