@@ -8,6 +8,9 @@ export class MarkdownViewEditor extends LitElement {
   @property({ type: Boolean })
   enablePreview?: boolean = false
 
+  @property({ type: Boolean })
+  enableAutoFormatting?: boolean = false
+
   @property({ type: String })
   content: string = ''
 
@@ -48,6 +51,17 @@ export class MarkdownViewEditor extends LitElement {
               }}
             />
           </label>
+
+          <label>
+            <span>Auto formatting</span>
+            <input
+              type="checkbox"
+              .checked=${Boolean(this.enableAutoFormatting)}
+              @change=${() => {
+                this.enableAutoFormatting = !this.enableAutoFormatting
+              }}
+            />
+          </label>
         </header>
 
         ${this.enablePreview
@@ -56,6 +70,7 @@ export class MarkdownViewEditor extends LitElement {
             ></markdown-preview>`
           : html`<markdown-editor
               .value=${this.content}
+              .autoFormat=${Boolean(this.enableAutoFormatting)}
               @valueChange=${(event: CustomEvent) => {
                 this.content = event.detail.value
               }}

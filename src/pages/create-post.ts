@@ -99,6 +99,7 @@ export class CreatePost extends PageElement {
 
       <div id="view-editor-container">
         <markdown-view-editor
+          enableAutoFormatting
           @valueChange=${valueChangeHandler}
           .content=${this.template || ''}
         ></markdown-view-editor>
