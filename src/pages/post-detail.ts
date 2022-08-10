@@ -120,6 +120,7 @@ export class PostDetail extends PageElement {
         <div id="view-editor-container">
           <markdown-view-editor
             enablePreview
+            enableAutoFormatting
             @valueChange=${valueChangeHandler}
             .content=${this.post.content}
           ></markdown-view-editor>

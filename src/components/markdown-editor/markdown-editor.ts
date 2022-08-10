@@ -1,11 +1,15 @@
 import { css, html, LitElement } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
+
 import StringUtil from '../../utils/string-util.js'
 
 @customElement('markdown-editor')
 export class MarkdownEditor extends LitElement {
   @property({ type: String })
   value: string = ''
+
+  @property({ type: Boolean })
+  autoFormat: boolean = true
 
   private set _value(value: string) {
     this.dispatchValueChangeEvent(value)
@@ -47,6 +51,16 @@ export class MarkdownEditor extends LitElement {
     this.dispatchEvent(
       new CustomEvent('valueChange', { detail: { value }, composed: true })
     )
+  }
+
+  format() {
+    this.value = window.prettier.format(this.value, {
+      parser: 'markdown',
+      plugins: window.prettierPlugins,
+    })
+
+    const { selectionStart } = this.editor
+    this.placeCaret(selectionStart)
   }
 
   private dispatchChangeEvent() {
@@ -91,6 +105,11 @@ export class MarkdownEditor extends LitElement {
       if (key === ']') {
         event.preventDefault()
         this.appendTab()
+      }
+
+      if (shiftKey && key === 'f') {
+        event.preventDefault()
+        this.format()
       }
     }
   }
@@ -201,6 +220,7 @@ export class MarkdownEditor extends LitElement {
         }}
         .value=${this.value}
         @change=${() => {
+          if (this.autoFormat) this.format()
           this.dispatchChangeEvent()
         }}
       ></textarea>
