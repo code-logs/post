@@ -117,7 +117,9 @@ export class MarkdownEditor extends LitElement {
   }
 
   private placeCaret(range: number) {
-    this.editor.setSelectionRange(range, range)
+    setTimeout(() => {
+      this.editor.setSelectionRange(range, range)
+    })
   }
 
   private getCurrentLineIndex() {
